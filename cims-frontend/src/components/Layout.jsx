@@ -3,7 +3,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import {
   FiHome, FiAlertCircle, FiHardDrive, FiBook, FiShield,
   FiLogOut, FiBell, FiUser, FiSun, FiMoon, FiRss, FiClock,
-  FiUsers, FiLayers, FiZap, FiTag, FiLock,
+  FiUsers, FiLayers, FiZap, FiTag, FiLock, FiMenu, FiX,
 } from 'react-icons/fi';
 import { getCurrentUser, changePassword } from '../services/api';
 import './Layout.css';
@@ -12,6 +12,7 @@ function Layout() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
   const [isDark, setIsDark] = useState(() => localStorage.getItem('cims-theme') === 'dark');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Change Password Modal States
   const [showPwdModal, setShowPwdModal] = useState(false);
@@ -127,7 +128,8 @@ function Layout() {
 
   return (
     <div className="app-container">
-      <aside className="sidebar">
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+      <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
         <div className="sidebar-brand">
           <div className="sidebar-logo">
             <FiShield className="brand-icon" />
@@ -176,6 +178,13 @@ function Layout() {
 
       <main className="main-content">
         <header className="topbar">
+          <button 
+            className="hamburger-btn" 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Toggle sidebar"
+          >
+            {sidebarOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+          </button>
           <div className="topbar-search">
             <svg className="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>

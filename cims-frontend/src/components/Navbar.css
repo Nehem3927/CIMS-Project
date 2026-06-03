@@ -18,3 +18,53 @@
 .nav-logout{background:#dc3545;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
 
 .nav-logout:hover{background:#b92b35}
+
+/* ── Responsive Design ────────────────────────────── */
+@media (max-width: 768px) {
+  .navbar {
+    gap: 12px;
+    padding: 8px 12px;
+    flex-wrap: wrap;
+  }
+
+  .navbar-links {
+    gap: 12px;
+    order: 3;
+    width: 100%;
+  }
+
+  .nav-link {
+    padding: 4px 6px;
+    font-size: 13px;
+  }
+
+  .navbar-actions {
+    margin-left: 0;
+  }
+
+  .nav-logout {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .navbar-links {
+    gap: 8px;
+  }
+
+  .nav-link {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+
+  .nav-logout {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+}
