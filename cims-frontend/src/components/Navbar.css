@@ -1,0 +1,20 @@
+.navbar{
+  display:flex;
+  align-items:center;
+  gap:20px;
+  padding:10px 16px;
+  background:var(--primary);
+  color:var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.navbar-links{display:flex;gap:18px;align-items:center}
+
+.nav-link{color:var(--surface);text-decoration:none;font-weight:600;padding:6px 8px;border-radius:8px}
+.nav-link:hover{background:rgba(255,255,255,0.06)}
+
+.navbar-actions{margin-left:auto}
+
+.nav-logout{background:#dc3545;color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+
+.nav-logout:hover{background:#b92b35}

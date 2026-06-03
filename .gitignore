@@ -1,0 +1,23 @@
+# Backend (Django)
+cims_backend/venv/
+cims_backend/__pycache__/
+cims_backend/*.pyc
+cims_backend/media/
+cims_backend/db.sqlite3
+cims_backend/.env
+
+# Frontend (React)
+cims-frontend/node_modules/
+cims-frontend/dist/
+cims-frontend/.env.local
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Logs & coverage
+*.log
+.coverage

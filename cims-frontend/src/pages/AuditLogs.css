@@ -1,0 +1,135 @@
+/* ====================================================
+   Audit Logs Page
+   ==================================================== */
+
+.audit-logs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.audit-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.audit-filters {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  border-radius: 14px;
+  box-shadow: var(--shadow-sm);
+  align-items: center;
+}
+
+.audit-filters form {
+  display: flex;
+  flex: 1;
+}
+
+.audit-table-wrapper {
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.audit-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.audit-table thead {
+  background: var(--surface-2);
+  border-bottom: 1.5px solid var(--border);
+}
+
+.audit-table th {
+  padding: 13px 18px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.audit-table td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text);
+  vertical-align: middle;
+}
+
+.audit-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.audit-table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.timestamp-cell {
+  color: var(--text-muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.user-cell {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.entity-cell {
+  font-weight: 500;
+}
+
+.id-cell {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* Action Badges */
+.action-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.action-create, .action-post {
+  background: rgba(34, 197, 94, 0.12);
+  color: #22c55e;
+}
+
+.action-update, .action-put, .action-patch {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.action-delete, .action-destroy {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+}
+
+.action-default {
+  background: var(--surface-2);
+  color: var(--text-muted);
+}
