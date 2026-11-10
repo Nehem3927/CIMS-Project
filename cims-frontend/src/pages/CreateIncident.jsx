@@ -47,11 +47,21 @@ function CreateIncident() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createIncident(form);
-      toast.success('Incident logged successfully!');
+      const payload = {
+        title: form.title,
+        description: form.description,
+        category: form.category_id ? parseInt(form.category_id, 10) : null,
+        priority: form.priority_id ? parseInt(form.priority_id, 10) : null,
+        assigned_to: form.assigned_to ? parseInt(form.assigned_to, 10) : null,
+      };
+
+      await createIncident(payload);
+      toast.success('Incident created successfully');
       navigate('/incidents');
     } catch (err) {
-      toast.error('Failed to create incident. Please check all required fields.');
+      console.error('Backend Error Details:', err.response?.data);
+      const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : 'Unknown error';
+      toast.error(`Failed to create incident: ${errorMsg}`);
     }
   };
 

@@ -1,11 +1,26 @@
 /* ====================================================
-   CIMS – Global Design System
+   CIMS â€“ Global Design System
    Default: Light mode. Toggle adds [data-theme="dark"] to <html>.
    ==================================================== */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
-/* ── Light mode tokens ────────────────────────────── */
+
+[data-theme="light"] {
+  --bg-app: var(--bg-primary);
+  --bg-sidebar: var(--bg-surface);
+  --bg-sidebar-2: var(--bg-elevated);
+  --surface: var(--bg-surface);
+  --surface-2: var(--bg-elevated);
+  --surface-hover: #E2E8F0;
+  --text-h: var(--text-primary);
+  --text: var(--text-primary);
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+}
+
+
+/* â”€â”€ Light mode tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   /* Brand */
   --primary:        #1a4f7a;
@@ -23,7 +38,7 @@
   --surface-2:      #f6f9fc;
   --surface-hover:  #edf2f7;
 
-  /* Text – high contrast on white/light surfaces */
+  /* Text â€“ high contrast on white/light surfaces */
   --text-h:         #0d1b2a;   /* headings */
   --text:           #2d3f50;   /* body text */
   --text-muted:     #5a7a95;   /* secondary / muted */
@@ -84,7 +99,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Dark mode overrides (triggered by toggle, NOT OS setting) ── */
+/* â”€â”€ Dark mode overrides (triggered by toggle, NOT OS setting) â”€â”€ */
 [data-theme="dark"] {
   --primary:        #3b82f6;
   --primary-600:    #60a5fa;
@@ -135,14 +150,15 @@
   --priority-low-text:       #6ee7b7;
 }
 
-/* ── Reset & Base ─────────────────────────────────── */
+/* â”€â”€ Reset & Base â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  background: var(--bg-app);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 #root {
@@ -152,7 +168,7 @@ body {
   text-align: left;
 }
 
-/* ── Typography ───────────────────────────────────── */
+/* â”€â”€ Typography â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--heading);
   font-weight: 700;
@@ -182,7 +198,7 @@ code, .mono {
   color: var(--text-h);
 }
 
-/* ── Form Controls ────────────────────────────────── */
+/* â”€â”€ Form Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 button {
   font-family: var(--sans);
   font-size: 14px;
@@ -224,12 +240,12 @@ select {
   padding-right: 36px;
 }
 
-/* ── Utility Classes ──────────────────────────────── */
+/* â”€â”€ Utility Classes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .muted { color: var(--text-muted); }
 .text-h { color: var(--text-h); }
 .surface { background: var(--surface); }
 
-/* ── Focus Accessibility ──────────────────────────── */
+/* â”€â”€ Focus Accessibility â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 button:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
@@ -240,7 +256,7 @@ a:focus-visible {
   border-radius: 8px;
 }
 
-/* ── Loading State ────────────────────────────────── */
+/* â”€â”€ Loading State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .loading {
   display: flex;
   align-items: center;
@@ -248,4 +264,44 @@ a:focus-visible {
   min-height: 200px;
   color: var(--text-muted);
   font-size: 15px;
+}
+:root,
+[data-theme="dark"] {
+  --bg-app: var(--bg-primary);
+  --bg-sidebar: var(--bg-surface);
+  --bg-sidebar-2: var(--bg-elevated);
+  --surface: var(--bg-surface);
+  --surface-2: var(--bg-elevated);
+  --surface-hover: #334155;
+  --text-h: var(--text-primary);
+  --text: var(--text-primary);
+  --text-muted: #94A3B8;
+  --border: #334155;
+}
+
+:root,
+[data-theme="dark"] {
+  --bg-app: var(--bg-primary);
+  --bg-sidebar: var(--bg-surface);
+  --bg-sidebar-2: var(--bg-elevated);
+  --surface: var(--bg-surface);
+  --surface-2: var(--bg-elevated);
+  --surface-hover: #334155;
+  --text-h: var(--text-primary);
+  --text: var(--text-primary);
+  --text-muted: #94A3B8;
+  --border: #334155;
+}
+
+[data-theme="light"] {
+  --bg-app: var(--bg-primary);
+  --bg-sidebar: var(--bg-surface);
+  --bg-sidebar-2: var(--bg-elevated);
+  --surface: var(--bg-surface);
+  --surface-2: var(--bg-elevated);
+  --surface-hover: #E2E8F0;
+  --text-h: var(--text-primary);
+  --text: var(--text-primary);
+  --text-muted: #64748B;
+  --border: #E2E8F0;
 }

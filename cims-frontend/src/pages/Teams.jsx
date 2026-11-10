@@ -3,6 +3,7 @@ import { getTeams, getUsers, createTeam, updateTeam, deleteTeam } from '../servi
 import { FiUsers, FiPlus, FiEdit2, FiTrash2, FiX, FiCheck, FiShield } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
+import Spinner from '../components/Spinner';
 import './Teams.css';
 
 function Teams() {
@@ -103,7 +104,7 @@ function Teams() {
     });
   };
 
-  if (loading) return <div className="loading">Loading teams…</div>;
+  if (loading) return <Spinner />;
 
   return (
     <div className="teams-container">

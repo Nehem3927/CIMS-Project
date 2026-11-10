@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import API from '../services/api';
+import Spinner from '../components/Spinner';
 import { FiPlus, FiTrash2, FiRss } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
@@ -7,6 +8,7 @@ import './ThreatFeeds.css';
 
 function ThreatFeeds() {
   const [feeds, setFeeds] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newFeed, setNewFeed] = useState({ feed_name: '', source_url: '' });
 
   // Confirm Modal state
@@ -28,6 +30,8 @@ function ThreatFeeds() {
     } catch (err) {
       console.error('Error loading feeds:', err);
       toast.error('Failed to load threat feeds.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,6 +64,8 @@ function ThreatFeeds() {
       }
     });
   };
+
+  if (loading) return <Spinner />;
 
   return (
     <div className="threat-feeds-container">

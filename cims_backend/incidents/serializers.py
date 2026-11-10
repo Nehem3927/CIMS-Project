@@ -93,6 +93,14 @@ class PlaybookStepSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class IncidentPlaybookSerializer(serializers.ModelSerializer):
+    playbook_name = serializers.CharField(source='playbook.playbook_name', read_only=True)
+
+    class Meta:
+        model = IncidentPlaybook
+        fields = '__all__'
+
+
 class IocSerializer(serializers.ModelSerializer):
     feed_name = serializers.CharField(source='feed.feed_name', read_only=True)
 
@@ -131,10 +139,11 @@ class IncidentSerializer(serializers.ModelSerializer):
     reported_by_name = serializers.CharField(source='reported_by.username', read_only=True)
     assigned_to_name = serializers.CharField(source='assigned_to.username', read_only=True)
     assigned_team_name = serializers.CharField(source='assigned_team.team_name', read_only=True)
-    updates = IncidentUpdateSerializer(many=True, read_only=True)
-    assets = IncidentAssetSerializer(many=True, read_only=True)
-    actions = ResponseActionSerializer(many=True, read_only=True)
-    evidence_list = EvidenceSerializer(many=True, read_only=True)
+    updates = IncidentUpdateSerializer(many=True, read_only=True, source='incidentupdate_set')
+    assets = IncidentAssetSerializer(many=True, read_only=True, source='incidentasset_set')
+    actions = ResponseActionSerializer(many=True, read_only=True, source='responseaction_set')
+    playbooks = IncidentPlaybookSerializer(many=True, read_only=True, source='incidentplaybook_set')
+    evidence_list = EvidenceSerializer(many=True, read_only=True, source='evidence_set')
     incident_iocs = IncidentIocSerializer(many=True, source='incidentioc_set', read_only=True)
     metrics_log = MetricsLogSerializer(many=True, source='metricslog_set', read_only=True)
 

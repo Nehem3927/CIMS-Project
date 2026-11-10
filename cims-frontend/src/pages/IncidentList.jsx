@@ -171,8 +171,8 @@ function IncidentList() {
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
-            {isLoading && search !== debouncedSearch ? (
-              <div className="search-spinner" aria-label="Searching…"></div>
+            {isLoading ? (
+              <div className="search-spinner" role="status" aria-label="Loading incidents"></div>
             ) : (
               <button type="submit" className="search-btn" aria-label="Search">
                 <FiSearch />
@@ -260,7 +260,7 @@ function IncidentList() {
                         Reset Filters
                       </button>
                       <Link to="/incidents/new" className="btn-primary">
-                        Log First Incident
+                        Create New Incident
                       </Link>
                     </div>
                   </div>

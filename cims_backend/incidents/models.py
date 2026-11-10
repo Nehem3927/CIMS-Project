@@ -290,3 +290,27 @@ class AuditLog(models.Model):
     class Meta:
         db_table = 'audit_logs'
         managed = False
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.db import models as django_models
+
+@receiver(post_save, sender=Ioc)
+def auto_match_ioc_to_assets(sender, instance, created, **kwargs):
+    if not created:
+        return
+    if instance.ioc_type not in ('IP Address', 'Domain', 'Hostname'):
+        return
+    matched_assets = App.objects.filter(
+        django_models.Q(ip_address__iexact=instance.ioc_value) |
+        django_models.Q(hostname__iexact=instance.ioc_value)
+    )
+    for asset in matched_assets:
+        for ia in IncidentAsset.objects.filter(app=asset).select_related('incident', 'incident__status'):
+            if ia.incident.status and ia.incident.status.status_name != 'Closed':
+                IncidentIoc.objects.get_or_create(
+                    incident=ia.incident,
+                    ioc=instance,
+                    defaults={'matched_app': asset}
+                )
+

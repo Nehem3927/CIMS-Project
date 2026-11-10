@@ -3,6 +3,7 @@ import { getUsers, getRoles, createUser, updateUser, deleteUser } from '../servi
 import { FiUsers, FiPlus, FiEdit2, FiTrash2, FiX, FiCheck } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
+import Spinner from '../components/Spinner';
 import './Users.css';
 
 function Users() {
@@ -118,7 +119,7 @@ function Users() {
     });
   };
 
-  if (loading) return <div className="loading">Loading user management…</div>;
+  if (loading) return <Spinner />;
 
   return (
     <div className="users-container">

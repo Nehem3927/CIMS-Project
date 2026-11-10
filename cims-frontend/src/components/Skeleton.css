@@ -1,4 +1,4 @@
-.cims-skeleton {
+﻿.cims-skeleton {
   background: var(--surface-hover);
   position: relative;
   overflow: hidden;
@@ -50,3 +50,4 @@
 .skeleton-circle {
   display: block;
 }
+

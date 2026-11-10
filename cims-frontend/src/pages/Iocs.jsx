@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import API from '../services/api';
+import Spinner from '../components/Spinner';
 import { FiShield, FiPlus, FiTrash2, FiRss } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
@@ -7,6 +8,7 @@ import './Iocs.css';
 
 function Iocs() {
   const [iocs, setIocs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [threatFeeds, setThreatFeeds] = useState([]);
   const [newIoc, setNewIoc] = useState({ ioc_type: '', ioc_value: '', feed_id: '' });
 
@@ -19,8 +21,22 @@ function Iocs() {
   });
 
   useEffect(() => {
-    loadIocs();
-    loadThreatFeeds();
+    const loadData = async () => {
+      try {
+        const [iocRes, feedRes] = await Promise.all([
+          API.get('/iocs/'),
+          API.get('/threat-feeds/'),
+        ]);
+        setIocs(iocRes.data.results || iocRes.data);
+        setThreatFeeds(feedRes.data.results || feedRes.data);
+      } catch (err) {
+        console.error('Error loading IOCs:', err);
+        toast.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
   }, []);
 
   const loadIocs = async () => {
@@ -82,6 +98,8 @@ function Iocs() {
     if (t.includes('email'))  return 'ioc-type-email';
     return 'ioc-type-default';
   };
+
+  if (loading) return <Spinner />;
 
   return (
     <div className="iocs-container">

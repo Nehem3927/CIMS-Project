@@ -1,4 +1,4 @@
-/* ====================================================
+﻿/* ====================================================
    Incident List Page
    ==================================================== */
 
@@ -131,12 +131,12 @@
   white-space: nowrap;
 }
 
-.status-new           { background: var(--status-new-bg);           color: var(--status-new-text); }
-.status-investigating  { background: var(--status-investigating-bg);  color: var(--status-investigating-text); }
-.status-contained     { background: var(--status-contained-bg);     color: var(--status-contained-text); }
-.status-eradicated    { background: var(--status-eradicated-bg);    color: var(--status-eradicated-text); }
-.status-recovered     { background: var(--status-recovered-bg);     color: var(--status-recovered-text); }
-.status-closed        { background: var(--status-closed-bg);        color: var(--status-closed-text); }
+.status-new          { background: rgba(239,68,68,0.15);  color: var(--critical); }
+.status-investigating { background: rgba(249,115,22,0.15); color: var(--high); }
+.status-contained    { background: rgba(59,130,246,0.15); color: var(--low); }
+.status-eradicated   { background: rgba(99,102,241,0.15); color: var(--accent-secondary); }
+.status-recovered    { background: rgba(16,185,129,0.15); color: var(--resolved); }
+.status-closed       { background: rgba(148,163,184,0.15); color: var(--text-muted); }
 
 /* Priority badges */
 .priority-badge {
@@ -381,3 +381,4 @@
   justify-content: center;
   gap: 12px;
 }
+

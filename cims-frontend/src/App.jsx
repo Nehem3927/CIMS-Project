@@ -20,41 +20,39 @@ function App() {
   const isLoggedIn = () => !!localStorage.getItem('access');
 
   return (
-    <BrowserRouter>
+    <>
       <Toaster
         position="top-right"
         toastOptions={{
-          className: 'cims-toast',
           style: {
-            background: 'var(--surface)',
-            color: 'var(--text)',
-            border: '1px solid var(--border)',
-            fontFamily: 'var(--sans)',
-            fontSize: '14px',
-            borderRadius: '8px',
-          },
+            background: 'var(--bg-surface)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border)'
+          }
         }}
       />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route element={<Layout />}>
-          <Route path="/" element={isLoggedIn() ? <Dashboard /> : <Navigate to="/login" />} />
-          <Route path="/incidents" element={<IncidentList />} />
-          <Route path="/incidents/new" element={<CreateIncident />} />
-          <Route path="/incidents/:id" element={<IncidentDetail />} />
-          <Route path="/assets" element={<Assets />} />
-          <Route path="/playbooks" element={<Playbooks />} />
-          <Route path="/iocs" element={<Iocs />} />
-          <Route path="/threat-feeds" element={<ThreatFeeds />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/response-actions" element={<ResponseActions />} />
-          <Route path="/audit-logs" element={<AuditLogs />} />
-          <Route path="/users" element={<Users />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<Layout />}>
+            <Route path="/" element={isLoggedIn() ? <Dashboard /> : <Navigate to="/login" />} />
+            <Route path="/incidents" element={<IncidentList />} />
+            <Route path="/incidents/new" element={<CreateIncident />} />
+            <Route path="/incidents/:id" element={<IncidentDetail />} />
+            <Route path="/assets" element={<Assets />} />
+            <Route path="/playbooks" element={<Playbooks />} />
+            <Route path="/iocs" element={<Iocs />} />
+            <Route path="/threat-feeds" element={<ThreatFeeds />} />
+            <Route path="/teams" element={<Teams />} />
+            <Route path="/categories" element={<Categories />} />
+            <Route path="/response-actions" element={<ResponseActions />} />
+            <Route path="/audit-logs" element={<AuditLogs />} />
+            <Route path="/users" element={<Users />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

@@ -9,11 +9,13 @@ import {
 } from '../services/api';
 import { FiBook, FiPlus, FiTrash2, FiLayers } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
+import Spinner from '../components/Spinner';
 import ConfirmModal from '../components/ConfirmModal';
 import './Playbooks.css';
 
 function Playbooks() {
   const [playbooks, setPlaybooks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newPlaybookName, setNewPlaybookName] = useState('');
   const [selectedPlaybook, setSelectedPlaybook] = useState(null);
   const [steps, setSteps] = useState([]);
@@ -48,6 +50,8 @@ function Playbooks() {
     } catch (err) {
       console.error('Error loading playbooks:', err);
       toast.error('Failed to load playbooks.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -147,6 +151,8 @@ function Playbooks() {
       }
     });
   };
+
+  if (loading) return <Spinner />;
 
   return (
     <div className="playbooks-container">

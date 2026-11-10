@@ -3,6 +3,7 @@ import { getCategories, getPriorities, createCategory, updateCategory, deleteCat
 import { FiLayers, FiPlus, FiEdit2, FiTrash2, FiX, FiCheck, FiChevronRight } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
+import Spinner from '../components/Spinner';
 import './Categories.css';
 
 function Categories() {
@@ -113,7 +114,7 @@ function Categories() {
     return 'priority-none';
   };
 
-  if (loading) return <div className="loading">Loading categories…</div>;
+  if (loading) return <Spinner />;
 
   return (
     <div className="categories-container">

@@ -1,0 +1,47 @@
+/* Base defaults to the dark Modern Dark Ops palette. */
+:root,
+[data-theme="dark"] {
+  /* Dark Mode (Modern Dark Ops) */
+  --bg-primary: #0F172A;
+  --bg-surface: #1E293B;
+  --bg-elevated: #273449;
+  --accent-primary: #3B82F6;
+  --accent-secondary: #6366F1;
+  --text-primary: #F8FAFC;
+  --text-muted: #94A3B8;
+  --border: #334155;
+
+  /* Existing component tokens */
+  --accent-hover: #2563EB;
+  --critical: #EF4444;
+  --high: #F97316;
+  --medium: #F59E0B;
+  --low: #3B82F6;
+  --resolved: #10B981;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+}
+
+[data-theme="light"] {
+  /* Light Mode (Clean Enterprise) */
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-elevated: #F1F5F9;
+  --accent-primary: #1E40AF;
+  --accent-secondary: #0284C7;
+  --text-primary: #0F172A;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+
+  /* Existing component tokens */
+  --accent-hover: #1D4ED8;
+  --critical: #EF4444;
+  --high: #F97316;
+  --medium: #F59E0B;
+  --low: #1E40AF;
+  --resolved: #10B981;
+  --shadow-sm: 0 1px 3px rgba(15,23,42,0.08);
+  --shadow-md: 0 4px 12px rgba(15,23,42,0.12);
+  --shadow-lg: 0 12px 32px rgba(15,23,42,0.16);
+}

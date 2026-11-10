@@ -11,7 +11,7 @@ import './Layout.css';
 function Layout() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
-  const [isDark, setIsDark] = useState(() => localStorage.getItem('cims-theme') === 'dark');
+  const [isDark, setIsDark] = useState(() => localStorage.getItem('cims-theme') !== 'light');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Change Password Modal States
@@ -65,7 +65,7 @@ function Layout() {
       document.documentElement.setAttribute('data-theme', 'dark');
       localStorage.setItem('cims-theme', 'dark');
     } else {
-      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'light');
       localStorage.setItem('cims-theme', 'light');
     }
   }, [isDark]);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import API from '../services/api';
+import Spinner from '../components/Spinner';
 import { FiPlus, FiServer, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
 import ConfirmModal from '../components/ConfirmModal';
@@ -7,6 +8,7 @@ import './Assets.css';
 
 function Assets() {
   const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newAsset, setNewAsset] = useState({ app_name: '', app_type: '', ip_address: '', hostname: '' });
   
   // Confirm Modal state
@@ -18,7 +20,17 @@ function Assets() {
   });
 
   useEffect(() => {
-    API.get('/assets/').then(res => setAssets(res.data.results || res.data));
+    const loadAssets = async () => {
+      try {
+        const res = await API.get('/assets/');
+        setAssets(res.data.results || res.data);
+      } catch (err) {
+        toast.error('Failed to load data');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadAssets();
   }, []);
 
   const handleAdd = async () => {
@@ -52,6 +64,8 @@ function Assets() {
       }
     });
   };
+
+  if (loading) return <Spinner />;
 
   return (
     <div className="assets-container">

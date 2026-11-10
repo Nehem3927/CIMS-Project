@@ -1,4 +1,4 @@
-.navbar{
+﻿.navbar{
   display:flex;
   align-items:center;
   gap:20px;
@@ -19,7 +19,7 @@
 
 .nav-logout:hover{background:#b92b35}
 
-/* ── Responsive Design ────────────────────────────── */
+/* â”€â”€ Responsive Design â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 768px) {
   .navbar {
     gap: 12px;
@@ -68,3 +68,4 @@
     font-size: 11px;
   }
 }
+

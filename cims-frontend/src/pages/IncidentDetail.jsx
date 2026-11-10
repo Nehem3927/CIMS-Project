@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import API from '../services/api';
 import {
   getIncident, addIncidentUpdate, uploadEvidence,
   getAssets, getIocs, linkAsset, linkIoc, unlinkAsset, unlinkIoc,
-  createMetric, deleteMetric,
+  deleteMetric,
   createResponseAction, deleteResponseAction,
 } from '../services/api';
 import { FiArrowLeft, FiPlus, FiTrash2, FiDownload, FiEye, FiFileText } from 'react-icons/fi';
@@ -75,7 +76,11 @@ function IncidentDetail() {
   const navigate = useNavigate();
 
   const [incident, setIncident] = useState(null);
+  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('updates');
+  const [playbooks, setPlaybooks] = useState([]);
+  const [selectedPlaybook, setSelectedPlaybook] = useState('');
+  const [isExecuting, setIsExecuting] = useState(false);
 
   // Updates
   const [updateMsg, setUpdateMsg] = useState('');
@@ -97,7 +102,7 @@ function IncidentDetail() {
   const [selectedMatchedApp, setSelectedMatchedApp] = useState('');
 
   // Metrics
-  const [metricType, setMetricType] = useState('');
+  const [metricType, setMetricType] = useState('Time to Detect');
   const [metricValue, setMetricValue] = useState('');
 
   // Response Actions
@@ -115,14 +120,51 @@ function IncidentDetail() {
   });
 
   useEffect(() => {
+    API.get('/playbooks/')
+      .then(res => {
+        // Check if Django returned paginated data (an object with 'results')
+        const playbooksData = res.data.results ? res.data.results : res.data;
+        setPlaybooks(playbooksData);
+      })
+      .catch(err => {
+        console.error('Failed to fetch playbooks:', err);
+        toast.error('Failed to load playbooks');
+      });
+  }, []);
+
+  useEffect(() => {
+    setIncident(null);
+    setError(null);
     loadIncident();
     loadAssets();
     loadIocs();
   }, [id]);
 
+  const handleRunPlaybook = async () => {
+    if (!selectedPlaybook) return;
+    setIsExecuting(true);
+    try {
+      const res = await API.post(`/incidents/${id}/execute_playbook/`, { playbook_id: selectedPlaybook });
+      toast.success(res.data.message);
+      setSelectedPlaybook('');
+      loadIncident();
+    } catch (err) {
+      toast.error('Failed to execute playbook');
+    } finally {
+      setIsExecuting(false);
+    }
+  };
+
   const loadIncident = async () => {
-    const res = await getIncident(id);
-    setIncident(res.data);
+    try {
+      const res = await getIncident(id);
+      setIncident(res.data);
+      console.log('INCIDENT DATA FROM BACKEND:', res.data);
+      setError(null);
+    } catch (err) {
+      console.error('Failed to load incident:', err);
+      setError('Incident not found or backend error.');
+    }
   };
 
   const loadAssets = async () => {
@@ -171,7 +213,7 @@ function IncidentDetail() {
   const handleLinkAsset = async () => {
     if (!selectedAsset) return;
     try {
-      await linkAsset({ incident: id, app: selectedAsset, impact_type: impactType });
+      await linkAsset({ incident: id, app: selectedAsset, impact_type: impactType || 'Affected' });
       setSelectedAsset('');
       setImpactType('');
       loadIncident();
@@ -233,15 +275,18 @@ function IncidentDetail() {
 
   // ── Metrics handlers ────────────────────────────────────
   const handleAddMetric = async () => {
-    if (!metricType.trim() || metricValue === '') return;
+    if (!metricValue) return;
     try {
-      await createMetric({ incident: id, metric_type: metricType, value_numeric: metricValue });
-      setMetricType('');
+      await API.post('/metrics-log/', {
+        incident: id,
+        metric_type: metricType,
+        value_numeric: parseFloat(metricValue),
+      });
+      toast.success('Metric added successfully');
       setMetricValue('');
       loadIncident();
-      toast.success('Metric logged successfully!');
     } catch (err) {
-      toast.error('Error adding metric.');
+      toast.error('Failed to add metric');
     }
   };
 
@@ -303,7 +348,25 @@ function IncidentDetail() {
     });
   };
 
+  if (error) {
+    return (
+      <div className="loading">
+        <p>{error}</p>
+        <button className="btn-primary" onClick={() => navigate('/incidents')}>
+          Back to Incidents
+        </button>
+      </div>
+    );
+  }
+
   if (!incident) return <div className="loading">Loading incident…</div>;
+
+  const updates = Array.isArray(incident.updates) ? incident.updates : [];
+  const evidenceList = Array.isArray(incident.evidence_list) ? incident.evidence_list : [];
+  const assets = Array.isArray(incident.assets) ? incident.assets : [];
+  const actions = Array.isArray(incident.actions) ? incident.actions : [];
+  const incidentIocs = Array.isArray(incident.incident_iocs) ? incident.incident_iocs : [];
+  const metricsLog = Array.isArray(incident.metrics_log) ? incident.metrics_log : [];
 
   return (
     <div className="incident-detail-container">
@@ -339,339 +402,239 @@ function IncidentDetail() {
       </div>
 
       {/* ── Tabs ──────────────────────────────────────────── */}
+      {/* Tabs Navigation */}
       <div className="tabs">
-        {TABS.map(tab => (
-          <button
-            key={tab}
-            className={activeTab === tab ? 'tab-active' : ''}
-            onClick={() => setActiveTab(tab)}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </button>
-        ))}
+        <button className={activeTab === 'updates' ? 'tab-active' : ''} onClick={() => setActiveTab('updates')}>Updates</button>
+        <button className={activeTab === 'evidence' ? 'tab-active' : ''} onClick={() => setActiveTab('evidence')}>Evidence</button>
+        <button className={activeTab === 'actions' ? 'tab-active' : ''} onClick={() => setActiveTab('actions')}>Actions</button>
+        <button className={activeTab === 'assets' ? 'tab-active' : ''} onClick={() => setActiveTab('assets')}>Assets</button>
+        <button className={activeTab === 'iocs' ? 'tab-active' : ''} onClick={() => setActiveTab('iocs')}>IOCs</button>
+        <button className={activeTab === 'metrics' ? 'tab-active' : ''} onClick={() => setActiveTab('metrics')}>Metrics</button>
       </div>
 
-      {/* ── Updates Tab ───────────────────────────────────── */}
+      {/* TAB: UPDATES */}
       {activeTab === 'updates' && (
         <div className="tab-content">
-          <ul className="update-list">
-            {incident.updates.map(up => (
-              <li key={up.update_id}>
-                <strong>{up.updated_by_name || 'System'}</strong> – {up.update_message}
-                <span>({new Date(up.changed_at).toLocaleString()})</span>
-              </li>
-            ))}
-          </ul>
+          {incident.updates && incident.updates.length > 0 ? (
+            <ul className="update-list">
+              {incident.updates.map(up => (
+                <li key={up.update_id}>
+                  <strong>{up.updated_by_name || 'System'}</strong>{' '}{'\u2013'}{' '}{up.update_message}
+                  <span style={{ color: 'var(--text-muted)', fontSize: '12px', marginLeft: '10px' }}>
+                    ({new Date(up.changed_at).toLocaleString()})
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>No updates have been logged for this incident yet.</p>
+          )}
+
           <div className="add-update">
-            <input
-              type="text"
-              placeholder="Add a new update…"
-              value={updateMsg}
-              onChange={e => setUpdateMsg(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAddUpdate()}
-            />
+            <input type="text" placeholder="Add a new update..." value={updateMsg} onChange={e => setUpdateMsg(e.target.value)} />
             <button onClick={handleAddUpdate}>Add Update</button>
           </div>
         </div>
       )}
 
-      {/* ── Evidence Tab ──────────────────────────────────── */}
-      {activeTab === 'evidence' && (
-        <div className="tab-content">
-          <div className="upload-area">
-            <input
-              type="file"
-              id="evidence-file-input"
-              onChange={e => setSelectedFile(e.target.files[0])}
-            />
-            <button onClick={handleUpload} disabled={uploading || !selectedFile}>
-              {uploading ? 'Uploading…' : 'Upload'}
-            </button>
-          </div>
-
-          {incident.evidence_list.length === 0 ? (
-            <p className="empty-list">No evidence uploaded yet.</p>
-          ) : (
-            <div className="evidence-grid">
-              {incident.evidence_list.map(ev => (
-                <EvidencePreview
-                  key={ev.evidence_id}
-                  ev={ev}
-                  onPreviewPdf={(url, name) => {
-                    setPdfPreviewUrl(url);
-                    setPdfPreviewName(name);
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Actions Tab ───────────────────────────────────── */}
+      {/* TAB: ACTIONS */}
       {activeTab === 'actions' && (
         <div className="tab-content">
-          <div className="actions-form">
-            <select value={actionType} onChange={e => setActionType(e.target.value)}>
-              <option value="">Select Action Type…</option>
-              <option value="Block IP Address">Block IP Address</option>
-              <option value="Isolate Host / App">Isolate Host / App</option>
-              <option value="Disable User Account">Disable User Account</option>
-              <option value="Patch Application Vulnerability">Patch Application Vulnerability</option>
-              <option value="Quarantine Executable">Quarantine Executable</option>
-              <option value="Revoke Credentials">Revoke Credentials</option>
-              <option value="Other">Other (Specify…)</option>
-            </select>
-
-            {actionType === 'Other' && (
-              <input
-                type="text"
-                placeholder="Specify Action Type…"
-                value={customActionType}
-                onChange={e => setCustomActionType(e.target.value)}
-              />
-            )}
-
-            <select value={actionTarget} onChange={e => setActionTarget(e.target.value)}>
-              <option value="">Target Asset (Optional)</option>
-              {incident.assets && incident.assets.map(asset => (
-                <option key={asset.incident_asset_id} value={asset.incident_asset_id}>
-                  {asset.app_name}
-                </option>
+          {/* Run Playbook Box */}
+          <div style={{
+            background: 'var(--bg-elevated)',
+            padding: '16px',
+            borderRadius: '12px',
+            marginBottom: '24px',
+            display: 'flex',
+            gap: '12px',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            border: '1px solid var(--border)'
+          }}>
+            <h4 style={{ color: 'var(--accent-primary)', margin: 0, flexBasis: '100%' }}>{'\u26A1'} Run Playbook</h4>
+            <select
+              value={selectedPlaybook}
+              onChange={e => setSelectedPlaybook(e.target.value)}
+              style={{
+                padding: '10px',
+                borderRadius: '8px',
+                flex: 1,
+                minWidth: '200px',
+                background: 'var(--bg-surface)',
+                color: 'var(--text-primary)',
+                border: '1px solid var(--border)'
+              }}
+            >
+              <option value="">Select a playbook to execute...</option>
+              {playbooks?.map(p => (
+                <option key={p.playbook_id} value={p.playbook_id}>{p.playbook_name}</option>
               ))}
             </select>
-
-            <select value={actionSuccess} onChange={e => setActionSuccess(e.target.value)}>
-              <option value="true">Outcome: Success</option>
-              <option value="false">Outcome: Failed</option>
-            </select>
-
-            <button onClick={handleAddAction}>
-              <FiPlus style={{ marginRight: 4 }} /> Log Action
+            <button
+              onClick={handleRunPlaybook}
+              disabled={!selectedPlaybook || isExecuting}
+              className="btn-primary"
+              style={{ padding: '10px 20px', opacity: (!selectedPlaybook || isExecuting) ? 0.5 : 1 }}
+            >
+              {isExecuting ? 'Executing...' : 'Execute Playbook'}
             </button>
           </div>
 
-          {(!incident.actions || incident.actions.length === 0) ? (
-            <p className="empty-list">No response actions recorded.</p>
-          ) : (
+          {/* Actions Table */}
+          {incident.actions && incident.actions.length > 0 ? (
             <table className="actions-table">
               <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Target Asset</th>
-                  <th>Performed By</th>
-                  <th>Outcome</th>
-                  <th></th>
-                </tr>
+                <tr><th>Action Type</th><th>Performed By</th><th>Successful?</th></tr>
               </thead>
               <tbody>
-                {incident.actions.map(act => {
-                  const targetAsset = incident.assets?.find(
-                    a => a.incident_asset_id === act.target
-                  );
-                  return (
-                    <tr key={act.action_id}>
-                      <td>
-                        <span className="action-type-badge">{act.action_type}</span>
-                      </td>
-                      <td>
-                        {targetAsset ? (
-                          <span className="target-asset-label">{targetAsset.app_name}</span>
-                        ) : (
-                          <em className="text-muted">Incident-wide</em>
-                        )}
-                      </td>
-                      <td>{act.performed_by_name || 'System'}</td>
-                      <td>
-                        <span className={`success-badge ${act.was_successful ? 'success-yes' : 'success-no'}`}>
-                          {act.was_successful ? 'Success' : 'Failed'}
-                        </span>
-                      </td>
-                      <td>
-                        <button
-                          className="delete-btn"
-                          onClick={() => handleDeleteAction(act.action_id)}
-                          title="Delete action log"
-                        >
-                          <FiTrash2 />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {/* ── Assets Tab ────────────────────────────────────── */}
-      {activeTab === 'assets' && (
-        <div className="tab-content">
-          <div className="link-asset-form">
-            <select value={selectedAsset} onChange={e => setSelectedAsset(e.target.value)}>
-              <option value="">Select Asset…</option>
-              {allAssets.map(asset => (
-                <option key={asset.app_id} value={asset.app_id}>{asset.app_name}</option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Impact Type (e.g., Critical, High)"
-              value={impactType}
-              onChange={e => setImpactType(e.target.value)}
-            />
-            <button onClick={handleLinkAsset}>Link Asset</button>
-          </div>
-          <div className="linked-list">
-            {incident.assets && incident.assets.length > 0 ? (
-              <ul>
-                {incident.assets.map(asset => (
-                  <li key={asset.incident_asset_id}>
-                    <div>
-                      <span className="asset-name">{asset.app_name}</span>
-                      {asset.impact_type && <span className="impact-badge">{asset.impact_type}</span>}
-                    </div>
-                    <button className="delete-btn" onClick={() => handleUnlinkAsset(asset.incident_asset_id)}>
-                      Delete
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="empty-list">No linked assets yet.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── IOCs Tab ──────────────────────────────────────── */}
-      {activeTab === 'iocs' && (
-        <div className="tab-content">
-          <div className="link-ioc-form">
-            <select value={selectedIoc} onChange={e => setSelectedIoc(e.target.value)}>
-              <option value="">Select IOC…</option>
-              {allIocs.map(ioc => (
-                <option key={ioc.ioc_id} value={ioc.ioc_id}>
-                  {ioc.ioc_type}: {ioc.ioc_value}
-                </option>
-              ))}
-            </select>
-            <select value={selectedMatchedApp} onChange={e => setSelectedMatchedApp(e.target.value)}>
-              <option value="">Matched Asset (optional)</option>
-              {allAssets.map(asset => (
-                <option key={asset.app_id} value={asset.app_id}>{asset.app_name}</option>
-              ))}
-            </select>
-            <button onClick={handleLinkIoc}>Link IOC</button>
-          </div>
-          <div className="linked-list">
-            {incident.incident_iocs && incident.incident_iocs.length > 0 ? (
-              <ul>
-                {incident.incident_iocs.map(link => (
-                  <li key={link.incident_ioc_id}>
-                    <div>
-                      <span className="ioc-type">{link.ioc_type}</span>
-                      <span className="ioc-value">{link.ioc_value}</span>
-                      {link.matched_app_name && <span className="matched-app">{link.matched_app_name}</span>}
-                    </div>
-                    <button className="delete-btn" onClick={() => handleUnlinkIoc(link.incident_ioc_id)}>
-                      Delete
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="empty-list">No linked IOCs yet.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* ── Metrics Tab ───────────────────────────────────── */}
-      {activeTab === 'metrics' && (
-        <div className="tab-content">
-          <div className="metrics-form">
-            <input
-              type="text"
-              placeholder="Metric Type (e.g., MTTD, MTTR, Impact Score)"
-              value={metricType}
-              onChange={e => setMetricType(e.target.value)}
-            />
-            <input
-              type="number"
-              step="0.01"
-              placeholder="Value"
-              value={metricValue}
-              onChange={e => setMetricValue(e.target.value)}
-            />
-            <button onClick={handleAddMetric}>
-              <FiPlus style={{ marginRight: 4 }} /> Add Metric
-            </button>
-          </div>
-
-          {(!incident.metrics_log || incident.metrics_log.length === 0) ? (
-            <p className="empty-list">No metrics logged for this incident.</p>
-          ) : (
-            <table className="metrics-table">
-              <thead>
-                <tr>
-                  <th>Metric Type</th>
-                  <th>Value</th>
-                  <th>Measured At</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {incident.metrics_log.map(m => (
-                  <tr key={m.metric_id}>
-                    <td>
-                      <span className="metric-type-badge">{m.metric_type}</span>
-                    </td>
-                    <td className="metric-value-cell">{Number(m.value_numeric).toFixed(2)}</td>
-                    <td className="metric-date-cell">
-                      {new Date(m.measured_at).toLocaleString()}
-                    </td>
-                    <td>
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDeleteMetric(m.metric_id)}
-                        title="Delete metric"
-                      >
-                        <FiTrash2 />
-                      </button>
+                {incident.actions.map(act => (
+                  <tr key={act.action_id}>
+                    <td>{act.action_type}</td>
+                    <td>{act.performed_by_name || 'System'}</td>
+                    <td style={{ color: act.was_successful ? 'var(--resolved)' : 'var(--high)' }}>
+                      {act.was_successful ? 'Yes' : 'No'}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          ) : (
+            <p style={{ color: 'var(--text-muted)' }}>No actions taken yet. Run a playbook above to generate actions.</p>
           )}
         </div>
       )}
 
-      {/* Confirmation Modal */}
-      <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        title={confirmModal.title}
-        message={confirmModal.message}
-        onConfirm={confirmModal.onConfirm}
-        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-      />
-
-      {/* PDF Preview Modal */}
-      {pdfPreviewUrl && (
-        <div className="pdf-modal-overlay" onClick={() => setPdfPreviewUrl(null)}>
-          <div className="pdf-modal-card" onClick={e => e.stopPropagation()}>
-            <div className="pdf-modal-header">
-              <h3>Preview PDF: {pdfPreviewName}</h3>
-              <button className="pdf-modal-close" onClick={() => setPdfPreviewUrl(null)}>
-                &times;
-              </button>
-            </div>
-            <div className="pdf-modal-body">
-              <embed src={pdfPreviewUrl} type="application/pdf" width="100%" height="100%" />
-            </div>
+      {/* TAB: EVIDENCE (Placeholder if not implemented yet) */}
+      {activeTab === 'evidence' && (
+        <div className="tab-content">
+          <div className="upload-area">
+            <input type="file" onChange={e => setSelectedFile(e.target.files[0])} />
+            <button onClick={handleUpload}>Upload</button>
           </div>
+          <ul className="evidence-list">
+            {incident.evidence_list?.map(ev => (
+              <li key={ev.evidence_id}>
+                <a href={`http://localhost:8000/media/${ev.file_path}`} target="_blank" rel="noopener noreferrer">{ev.file_path}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* TAB: ASSETS */}
+      {activeTab === 'assets' && (
+        <div className="tab-content">
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <select value={selectedAsset} onChange={e => setSelectedAsset(e.target.value)} style={{ padding: '10px', borderRadius: '8px', flex: 1, background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+              <option value="">Select an asset to link...</option>
+              {allAssets.map(a => <option key={a.app_id} value={a.app_id}>{a.app_name} ({a.ip_address})</option>)}
+            </select>
+            <button onClick={handleLinkAsset} className="btn-primary" disabled={!selectedAsset}>Link Asset</button>
+          </div>
+
+          {assets.length > 0 ? (
+            <ul className="assets-list">
+              {assets.map(a => (
+                <li key={a.incident_asset_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)', padding: '12px', borderRadius: '8px', marginBottom: '8px', border: '1px solid var(--border)' }}>
+                  <span><strong>{a.app_name}</strong> - {a.impact_type}</span>
+                  <button onClick={() => handleUnlinkAsset(a.incident_asset_id)} style={{ background: 'var(--critical)', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          ) : <p style={{ color: 'var(--text-muted)' }}>No assets linked yet.</p>}
+        </div>
+      )}
+
+      {/* TAB: IOCs */}
+      {activeTab === 'iocs' && (
+        <div className="tab-content">
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
+            <select value={selectedIoc} onChange={e => setSelectedIoc(e.target.value)} style={{ padding: '10px', borderRadius: '8px', flex: 1, background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+              <option value="">Select an IOC to link...</option>
+              {allIocs.map(i => <option key={i.ioc_id} value={i.ioc_id}>{i.ioc_type}: {i.ioc_value}</option>)}
+            </select>
+            <select value={selectedMatchedApp} onChange={e => setSelectedMatchedApp(e.target.value)} style={{ padding: '10px', borderRadius: '8px', flex: 1, background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
+              <option value="">Matched Asset (Optional)</option>
+              {allAssets.map(a => <option key={a.app_id} value={a.app_id}>{a.app_name}</option>)}
+            </select>
+            <button onClick={handleLinkIoc} className="btn-primary" disabled={!selectedIoc}>Link IOC</button>
+          </div>
+
+          {incidentIocs.length > 0 ? (
+            <ul className="assets-list">
+              {incidentIocs.map(i => (
+                <li key={i.incident_ioc_id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-elevated)', padding: '12px', borderRadius: '8px', marginBottom: '8px', border: '1px solid var(--border)' }}>
+                  <span><strong>{i.ioc_type}</strong>: {i.ioc_value}</span>
+                  <button onClick={() => handleUnlinkIoc(i.incident_ioc_id)} style={{ background: 'var(--critical)', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '5px', cursor: 'pointer' }}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          ) : <p style={{ color: 'var(--text-muted)' }}>No IOCs linked yet.</p>}
+        </div>
+      )}
+
+      {/* TAB: METRICS */}
+      {activeTab === 'metrics' && (
+        <div className="tab-content">
+          {/* Add Metric Form */}
+          <div style={{
+            background: 'var(--bg-elevated)', padding: '16px', borderRadius: '12px',
+            marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'center',
+            flexWrap: 'wrap', border: '1px solid var(--border)'
+          }}>
+            <h4 style={{ color: 'var(--accent-primary)', margin: 0, flexBasis: '100%' }}>⏱️ Log Performance Metric</h4>
+
+            <select
+              value={metricType}
+              onChange={e => setMetricType(e.target.value)}
+              style={{ padding: '10px', borderRadius: '8px', flex: 1, minWidth: '180px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+            >
+              <option value="Time to Detect">Time to Detect</option>
+              <option value="Time to Contain">Time to Contain</option>
+              <option value="Time to Eradicate">Time to Eradicate</option>
+              <option value="Time to Recover">Time to Recover</option>
+            </select>
+
+            <input
+              type="number"
+              min="0"
+              step="any"
+              placeholder="Value (in minutes)"
+              value={metricValue}
+              onChange={e => setMetricValue(e.target.value)}
+              style={{ padding: '10px', borderRadius: '8px', flex: 1, minWidth: '150px', background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
+            />
+
+            <button
+              onClick={handleAddMetric}
+              disabled={!metricValue}
+              className="btn-primary"
+              style={{ padding: '10px 20px', opacity: !metricValue ? 0.5 : 1 }}
+            >
+              Save Metric
+            </button>
+          </div>
+
+          {/* Metrics Table */}
+          {metricsLog.length > 0 ? (
+            <table className="actions-table">
+              <thead>
+                <tr><th>Metric Type</th><th>Value</th><th>Recorded At</th></tr>
+              </thead>
+              <tbody>
+                {metricsLog.map(metric => (
+                  <tr key={metric.metric_id}>
+                    <td><strong>{metric.metric_type}</strong></td>
+                    <td style={{ color: 'var(--accent-primary)' }}>{metric.value_numeric} minutes</td>
+                    <td style={{ color: 'var(--text-muted)' }}>{new Date(metric.measured_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ color: 'var(--text-muted)' }}>No metrics logged for this incident yet.</p>
+          )}
         </div>
       )}
     </div>

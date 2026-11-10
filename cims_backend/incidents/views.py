@@ -106,6 +106,37 @@ class IncidentViewSet(viewsets.ModelViewSet):
         serializer.save(reported_by=None)
 
     @action(detail=True, methods=['post'])
+    def execute_playbook(self, request, pk=None):
+        incident = self.get_object()
+        playbook_id = request.data.get('playbook_id')
+        if not playbook_id:
+            return Response({'error': 'playbook_id is required'}, status=400)
+        try:
+            playbook = Playbook.objects.get(playbook_id=playbook_id)
+        except Playbook.DoesNotExist:
+            return Response({'error': 'Playbook not found'}, status=404)
+
+        steps = PlaybookStep.objects.filter(playbook=playbook).order_by('step_number')
+        created = 0
+        for step in steps:
+            ResponseAction.objects.create(
+                incident=incident,
+                performed_by=None,
+                target=None,
+                action_type=step.step_description[:100],
+                was_successful=False
+            )
+            created += 1
+
+        IncidentPlaybook.objects.get_or_create(
+            incident=incident,
+            playbook=playbook,
+            defaults={'steps_followed': f'Executed {created} steps'}
+        )
+
+        return Response({'message': f'Successfully created {created} response actions'}, status=201)
+
+    @action(detail=True, methods=['post'])
     def add_update(self, request, pk=None):
         incident = self.get_object()
         serializer = IncidentUpdateSerializer(data=request.data)

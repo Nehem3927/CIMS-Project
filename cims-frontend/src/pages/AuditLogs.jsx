@@ -1,32 +1,40 @@
 import { useEffect, useState } from 'react';
 import { getAuditLogs } from '../services/api';
+import { toast } from 'react-hot-toast';
+import Spinner from '../components/Spinner';
 import { FiClock, FiSearch } from 'react-icons/fi';
 import './AuditLogs.css';
 
 function AuditLogs() {
   const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [entityFilter, setEntityFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const loadLogs = () => {
+  const loadLogs = async () => {
+    setLoading(true);
     const params = {
       page,
       entity_name: entityFilter || undefined,
     };
-    getAuditLogs(params)
-      .then(res => {
-        if (res.data.results) {
-          setLogs(res.data.results);
-          // Backend pagination is 20 per page for audit logs
-          setTotalPages(Math.ceil(res.data.count / 20) || 1);
-        } else {
-          setLogs(res.data);
-          setTotalPages(1);
-        }
-      })
-      .catch(console.error);
+    try {
+      const res = await getAuditLogs(params);
+      if (res.data.results) {
+        setLogs(res.data.results);
+        // Backend pagination is 20 per page for audit logs
+        setTotalPages(Math.ceil(res.data.count / 20) || 1);
+      } else {
+        setLogs(res.data);
+        setTotalPages(1);
+      }
+    } catch (err) {
+      console.error('Error loading audit logs:', err);
+      toast.error('Failed to load data');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -38,6 +46,8 @@ function AuditLogs() {
     setEntityFilter(searchQuery);
     setPage(1);
   };
+
+  if (loading) return <Spinner />;
 
   return (
     <div className="audit-logs-container">

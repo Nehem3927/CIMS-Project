@@ -1,4 +1,4 @@
-.categories-container { padding: 0; }
+﻿.categories-container { padding: 0; }
 
 .categories-header {
   display: flex;
@@ -22,7 +22,7 @@
   margin: 0;
 }
 
-/* ── Table ──────────────────────────────────────────────── */
+/* â”€â”€ Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .categories-table-wrapper {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -123,7 +123,7 @@
   color: var(--text-muted);
 }
 
-/* ── Buttons (shared with Teams.css) ────────────────────── */
+/* â”€â”€ Buttons (shared with Teams.css) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -168,7 +168,7 @@
 }
 .btn-delete:hover { background: rgba(239,68,68,0.15); }
 
-/* ── Modal ──────────────────────────────────────────────── */
+/* â”€â”€ Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -289,3 +289,4 @@
   height: 200px;
   color: var(--text-muted);
 }
+

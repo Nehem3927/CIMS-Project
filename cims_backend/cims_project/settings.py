@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'incidents',
+    'incidents.apps.IncidentsConfig',
 ]
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
