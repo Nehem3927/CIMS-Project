@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
+
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,13 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-bj%az-yy7%+ueo0y1kbim2#f4$2qnq!ggaf&_uc#cd8(+be&@-'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-secret-key')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -45,6 +44,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,14 +76,10 @@ WSGI_APPLICATION = 'cims_project.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'cyber_incident_db',
-        'USER': 'root',
-        'PASSWORD': 'HOLYNAME', 
-        'HOST': 'localhost',
-        'PORT': '3306',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3'),
+        conn_max_age=600
+    )
 }
 
 # Password validation
@@ -117,13 +113,29 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+# Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
-# CORS for React frontend
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise configuration to compress static files
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Media files (for evidence uploads)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# --- PRODUCTION SETTINGS ---
+# Allow all origins for CORS (since AletCloud generates dynamic URLs)
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Trust AletCloud domains for the Django Admin panel
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.aletcloud.app',
+    'https://*.aletcloud.com',
+    'http://localhost:5173', # Keep local testing working
+    'http://localhost:8000',
 ]
 
 # REST Framework settings
@@ -144,6 +156,3 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
 }
 
-# Media files (for evidence uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
