@@ -15,13 +15,14 @@ import './IncidentDetail.css';
 // ── Evidence preview helper ───────────────────────────────
 const IMAGE_EXTS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
 const PDF_EXT = 'pdf';
+const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+const mediaBase = apiBase.replace('/api/', '/media/');
 
 function getExt(filePath) {
   return (filePath || '').split('.').pop().toLowerCase();
 }
 
 function EvidencePreview({ ev, onPreviewPdf }) {
-  const mediaBase = 'http://localhost:8000/media/';
   const url = `${mediaBase}${ev.file_path}`;
   const ext = getExt(ev.file_path);
   const fileName = ev.file_path.split('/').pop();
@@ -515,7 +516,7 @@ function IncidentDetail() {
           <ul className="evidence-list">
             {incident.evidence_list?.map(ev => (
               <li key={ev.evidence_id}>
-                <a href={`http://localhost:8000/media/${ev.file_path}`} target="_blank" rel="noopener noreferrer">{ev.file_path}</a>
+                <a href={`${mediaBase}${ev.file_path}`} target="_blank" rel="noopener noreferrer">{ev.file_path}</a>
               </li>
             ))}
           </ul>

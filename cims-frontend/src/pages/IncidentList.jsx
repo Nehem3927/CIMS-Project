@@ -92,7 +92,8 @@ function IncidentList() {
         priority: priorityFilter || '',
         category: categoryFilter || '',
       });
-      const response = await fetch(`http://localhost:8000/api/incidents/export/?${params.toString()}`, {
+      const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+      const response = await fetch(`${apiBase}incidents/export/?${params.toString()}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }

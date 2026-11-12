@@ -23,10 +23,11 @@ function CreateIncident() {
       try {
         const token = localStorage.getItem('access');
         const headers = { Authorization: `Bearer ${token}` };
+        const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
         const [catRes, priRes, userRes] = await Promise.all([
-          fetch('http://localhost:8000/api/categories/', { headers }).then(r => r.json()),
-          fetch('http://localhost:8000/api/priorities/', { headers }).then(r => r.json()),
-          fetch('http://localhost:8000/api/users/', { headers }).then(r => r.json()),
+          fetch(`${apiBase}categories/`, { headers }).then(r => r.json()),
+          fetch(`${apiBase}priorities/`, { headers }).then(r => r.json()),
+          fetch(`${apiBase}users/`, { headers }).then(r => r.json()),
         ]);
         setCategories(catRes.results || catRes);
         setPriorities(priRes.results || priRes);
